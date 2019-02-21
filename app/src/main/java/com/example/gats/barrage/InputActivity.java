@@ -1,5 +1,6 @@
 package com.example.gats.barrage;
 
+import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -25,7 +26,12 @@ public class InputActivity extends AppCompatActivity implements View.OnClickList
     @Override
     public void onClick(View v) {
         if (v==inputButton){
-            //设置一个intent传递相关的信息
+            //提取editext中的String
+            //利用intent返回
+            Intent intent = new Intent();
+            inputString = inputEdit.getText().toString();
+            intent.putExtra("input_word",inputString);
+            this.finish();
         }
     }
 }

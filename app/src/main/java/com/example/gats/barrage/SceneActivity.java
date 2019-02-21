@@ -1,6 +1,7 @@
 package com.example.gats.barrage;
 
 import android.content.Intent;
+import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -26,8 +27,6 @@ public class SceneActivity extends AppCompatActivity implements View.OnClickList
     private ViewRenderable testRenderable;
     private final String TAG = "SceneActivity";
     private Button InputActivityButton,ViewButton1,ViewButton2;
-    Intent intentToInput = new Intent(SceneActivity.this,InputActivity.class);
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -46,7 +45,7 @@ public class SceneActivity extends AppCompatActivity implements View.OnClickList
 
         arFragment = (ArFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.ux_fragment);
-
+        Log.d(TAG, "onCreate: init fragment");
         //实时更新
         arFragment.getArSceneView().getScene()
                 .addOnUpdateListener((frameTime -> {
@@ -88,7 +87,7 @@ public class SceneActivity extends AppCompatActivity implements View.OnClickList
                     if (testRenderable==null){
                         return;
                     }
-
+                    Log.d(TAG, "onCreate: set tap on plane!");
                     Anchor anchor = hitResult.createAnchor();
                     AnchorNode anchorNode = new AnchorNode(anchor);
                     anchorNode.setParent(arFragment.getArSceneView().getScene());
@@ -106,14 +105,37 @@ public class SceneActivity extends AppCompatActivity implements View.OnClickList
     public void onClick(View v) {
         if (v==InputActivityButton){
             //这里还传递关键字
+            Intent intentToInput = new Intent(SceneActivity.this,InputActivity.class);
             Log.d(TAG, "onClick: InputActivity Ready!");
-
-            startActivity(intentToInput);
+            //startActivity(intentToInput);
+            startActivityForResult(intentToInput,1);
             Log.d(TAG, "onClickEnd: Back to main from input!");
         }else if (v==ViewButton1){
-
+            //开启新的渲染线程，默认状态下是第一种选择
         }else if (v==ViewButton2){
-            
+
         }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        switch (requestCode){
+            case 1://返回输入的字符串
+                if (resultCode==RESULT_OK){
+                    //将字符串塞入新的View然后进行渲染
+                    String inputString = data.getStringExtra("input_word");
+                    Log.d(TAG, "onActivityResult: Get input_word");
+
+                }
+        }
+
+    }
+
+    private void CreateNewView(String inputString){
+        //调取View文件然后改变其中的文字，并且载入全新的渲染线程
+
+    }
+    private void GetNewBarrage(){
+
     }
 }
