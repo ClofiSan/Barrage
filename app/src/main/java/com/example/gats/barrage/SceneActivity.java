@@ -1,19 +1,26 @@
 package com.example.gats.barrage;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.TextView;
 
 import com.example.gats.barrage.R;
 import com.google.ar.core.Anchor;
+import com.google.ar.core.Frame;
 import com.google.ar.core.HitResult;
 import com.google.ar.core.Plane;
+import com.google.ar.core.Trackable;
+import com.google.ar.core.TrackingState;
 import com.google.ar.sceneform.AnchorNode;
+import com.google.ar.sceneform.Node;
 import com.google.ar.sceneform.rendering.ViewRenderable;
 import com.google.ar.sceneform.ux.ArFragment;
 import com.google.ar.sceneform.ux.TransformableNode;
@@ -27,6 +34,8 @@ public class SceneActivity extends AppCompatActivity implements View.OnClickList
     private ViewRenderable testRenderable;
     private final String TAG = "SceneActivity";
     private Button InputActivityButton,ViewButton1,ViewButton2;
+    private boolean hasFinishedLoading = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -81,9 +90,10 @@ public class SceneActivity extends AppCompatActivity implements View.OnClickList
                     return null;
                 });
 
-        //直接调用SceneForm中的现成的方法来监听扫描到的平面是否有被触碰
         arFragment.setOnTapArPlaneListener(
                 (HitResult hitResult,Plane plane,MotionEvent motionEvent)->{
+                    //这个方法采用的是平面检测
+                    //只能在检测到平面才能触发事件
                     if (testRenderable==null){
                         return;
                     }
@@ -126,16 +136,64 @@ public class SceneActivity extends AppCompatActivity implements View.OnClickList
                     String inputString = data.getStringExtra("input_word");
                     Log.d(TAG, "onActivityResult: Get input_word");
 
+
                 }
         }
 
     }
 
-    private void CreateNewView(String inputString){
-        //调取View文件然后改变其中的文字，并且载入全新的渲染线程
 
+    //让Scene上不断地更新frame
+
+    private void onSingleTap(MotionEvent tap){
+        //首先要判定模式
+        //如果是自定义弹幕的话就需要等待装载
+
+        //判定是否渲染完成
+        if (!hasFinishedLoading){
+            return;
+        }
+        Frame frame = arFragment.getArSceneView().getArFrame();
+        if (frame != null){
+            Log.d(TAG, "onSingleTap: tap correct");
+            BarrageShot(tap,frame);
+        }
     }
-    private void GetNewBarrage(){
 
+    private void BarrageShot(MotionEvent tap, Frame frame) {
+        //不需要放置在平面上，而是直接放在点击的地方就好
+        if (tap != null && frame.getCamera().getTrackingState() == TrackingState.TRACKING){
+            Log.d(TAG, "BarrageShot: has set barrage,ready to shot");
+            for (HitResult hit : frame.hitTest(tap)){
+                //Trackable trackable = hit.getTrackable();
+                Anchor anchor = hit.createAnchor();
+                AnchorNode anchorNode = new AnchorNode(anchor);
+                anchorNode.setParent(arFragment.getArSceneView().getScene());
+                Node newBarrage = CreateNewBarrage();
+                anchorNode.addChild(newBarrage);
+            }
+        }
+    }
+
+    private Node CreateNewBarrage(){
+        //调取View文件然后改变其中的文字，并且载入全新的渲染线程
+        //将渲染线程做Node返回
+        Node newBarrage = new Node();
+        TextView textView = createNewTextView(inputString);
+
+
+
+        return newBarrage;
+    }
+    private TextView createNewTextView(String inputString){
+        //动态创建一个新的TextView并且返回
+        TextView textView = new TextView(this);
+        ViewGroup.LayoutParams layoutParams =
+                new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,ViewGroup.LayoutParams.WRAP_CONTENT);
+        textView.setLayoutParams(layoutParams);
+        textView.setBackgroundColor(Color.WHITE);
+        textView.setText(inputString);
+
+        return textView;
     }
 }

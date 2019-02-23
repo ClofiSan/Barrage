@@ -3,6 +3,7 @@ package com.example.gats.barrage;
 import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -12,6 +13,7 @@ public class InputActivity extends AppCompatActivity implements View.OnClickList
     private Button inputButton;
     private EditText inputEdit;
     private String inputString;
+    private String TAG = "InputActivity";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -31,6 +33,7 @@ public class InputActivity extends AppCompatActivity implements View.OnClickList
             Intent intent = new Intent();
             inputString = inputEdit.getText().toString();
             intent.putExtra("input_word",inputString);
+            Log.d(TAG, "onClick: "+inputString);
             this.finish();
         }
     }
